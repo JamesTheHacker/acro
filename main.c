@@ -29,11 +29,21 @@ int main() {
 
   printw("Type any character to fill it in an alternating grid\n");
   refresh();
-  // 'chtype' is the type of character that ncurses uses. It will be an
-  // ASCII-like value, if that's what the user hit on the keyboard, but
-  // 'chtype' is larger than an 8-bit number and could have something else in
-  // it (some Unicode character, a control character for the terminal, etc.)
-  chtype ch = getch();
+
+  // 'chtype' is the type of character that ncurses uses to display. It will be
+  // an ASCII-like value, plus some other ncurses data.
+  //
+  // But when we read from the keyboard input, we instead get an 'int', which
+  // is any of a number of things -- special values from ncurses like
+  // KEY_RESIZED to indicate the terminal was resized, ERR to indicate no input
+  // or bad input, or a character code in ASCII that the user typed (or
+  // whatever the locale/keyboard is set to).
+  int ch = getch();
+  // If `ch` is outside of the normal ASCII-ish range, then use '?' instead,
+  // since we probably won't be able to display it.
+  if (ch < CHAR_MIN || ch > CHAR_MAX)
+    ch = '?';
+
   // We get the dimensions that the terminal is currently set to, so we know
   // how big of a buffer to allocate. We'll fill the buffer with some
   // characters after we've allocated it.
